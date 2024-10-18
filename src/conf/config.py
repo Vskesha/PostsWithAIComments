@@ -8,7 +8,6 @@ from tests.exceptions import ConfigFileNotFoundException, MandatoryEnvironmentVa
 
 
 class Settings(BaseSettings):
-    dummy_value: int = 0
     sqlalchemy_database_url: str = "postgresql+asyncpg://postgres:password@localhost:5432/todo_db"
     secret_key: str = "secret key"
     algorithm: str = "HS256"
