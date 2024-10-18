@@ -4,7 +4,7 @@ import pytest
 
 from tests.conftest import tmp_settings_dir, tmp_settings_file
 from tests.exceptions import ConfigFileNotFoundException, MandatoryEnvironmentVariableNotDefinedException
-from tests.settings import load_settings_from_file, get_mandatory_environment_variable, \
+from src.conf.config import load_settings_from_file, get_mandatory_environment_variable, \
     load_settings_from_environment
 
 
