@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.conf import messages
 from src.database.db import get_db
-from src.endpoints import posts, users
+from src.endpoints import auth, posts
 
 app = FastAPI()
 
@@ -16,8 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api")
 app.include_router(posts.router, prefix="/api")
-app.include_router(users.router, prefix="/api")
 
 
 @app.get("/")
@@ -46,12 +47,12 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
         result = result.fetchone()
         if result is None:
             raise HTTPException(
-                status_code=500, detail="Database is not configured correctly"
+                status_code=500, detail=messages.DATABASE_IS_NOT_CONFIGURED_CORRECTLY
             )
-        return {"message": "Database is configured correctly"}
+        return {"message": messages.DATABASE_IS_CONFIGURED_CORRECTLY}
     except Exception as e:
         print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error connecting to the database",
+            detail=messages.ERROR_CONNECTING_DATABASE,
         )
