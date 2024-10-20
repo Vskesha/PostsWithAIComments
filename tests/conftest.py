@@ -76,7 +76,7 @@ def tmp_settings_dir():
 def tmp_settings_file(tmp_settings_dir):
     file_path = os.path.join(tmp_settings_dir, 'dummy.env')
     with open(file_path, "w") as f:
-        f.write("DUMMY_VALUE = 1\n")
+        f.write("SECRET_KEY=secret key\n")
     yield file_path
 
 
@@ -84,7 +84,7 @@ def tmp_settings_file(tmp_settings_dir):
 def dummy_env(tmp_settings_dir):
     file_path = os.path.join(tmp_settings_dir, 'dummy_test.env')
     with open(file_path, "w") as f:
-        f.write("DUMMY_VALUE = 99\n")
+        f.write("SECRET_KEY=another secret key\n")
     os.environ["DUMMY_ENV_FOR_TEST"] = "dummy_test"
     try:
         yield
