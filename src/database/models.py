@@ -43,7 +43,7 @@ class Post(Base):
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
-    user = relationship("User", backref="posts")
+    user: Mapped[User] = relationship("User", backref="posts", lazy="joined")
 
 
 class Comment(Base):
@@ -60,8 +60,8 @@ class Comment(Base):
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
-    post = relationship("Post", backref="comments")
-    user = relationship("User", backref="comments")
+    post: Mapped[Post] = relationship("Post", backref="comments", lazy="joined")
+    user: Mapped[User] = relationship("User", backref="comments", lazy="joined")
 
 
 class Answer(Base):
@@ -78,5 +78,5 @@ class Answer(Base):
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
-    comment = relationship("Comment", backref="answers")
-    user = relationship("User", backref="answers")
+    comment: Mapped[Comment] = relationship("Comment", backref="answers", lazy="joined")
+    user: Mapped[User] = relationship("User", backref="answers", lazy="joined")
