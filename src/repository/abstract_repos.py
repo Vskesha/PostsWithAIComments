@@ -41,6 +41,6 @@ class UserRepository(ABC):
 
     @abstractmethod
     async def update_refresh_token(
-        self, email: str, refresh_token: str, db: Any
+        self, email: str, refresh_token: str | None, db: Any
     ) -> User:
         raise NotImplementedError

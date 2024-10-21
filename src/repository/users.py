@@ -25,7 +25,7 @@ class DBUserRepository(UserRepository):
         await db.refresh(user)
         return user
 
-    async def update_refresh_token(self, email: str, refresh_token: str, db: Any) -> User:
+    async def update_refresh_token(self, email: str, refresh_token: str | None, db: Any) -> User:
         user = await self.get_user_by_email(email, db)
         if user:
             user.refresh_token = refresh_token
@@ -49,7 +49,7 @@ class RedisUserRepository(UserRepository):
         await  db.expire(key, 900)
         return user
 
-    async def update_refresh_token(self, email: str, refresh_token: str, db: Any) -> User:
+    async def update_refresh_token(self, email: str, refresh_token: str | None, db: Any) -> User:
         pass
 
 db_user_repo = DBUserRepository()
