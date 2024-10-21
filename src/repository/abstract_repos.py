@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Any
 
 from src.database.models import Post, User
-from src.schemas.posts import PostBase
+from src.schemas.posts import PostBase, PostRequest
 from src.schemas.users import UserRequest
 
 
@@ -17,7 +17,7 @@ class PostRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def create_post(self, body: PostBase, db: Any) -> Post:
+    async def create_post(self, body: PostRequest, db: Any) -> Post:
         raise NotImplementedError
 
     @abstractmethod
