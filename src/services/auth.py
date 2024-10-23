@@ -13,7 +13,7 @@ from src.conf import messages
 from src.conf.config import settings
 from src.database.db import get_db
 from src.database.redis import redis_db
-from src.repository.users import db_user_repo, redis_user_repo
+from src.repository.users import db_user_repo
 
 
 class PasswordManager:
@@ -191,20 +191,6 @@ class AuthService:
                 raise credentials_exception
         except JWTError as err:
             raise credentials_exception
-
-        # user = await redis_user_repo.get_user_by_email(email, redis_db)
-        # if user is None:
-        #     user = await db_user_repo.get_user_by_email(email, db)
-        #     if user is None:
-        #         raise credentials_exception
-        #     body = {"email": email, "user": user}
-        #     await redis_user_repo.create_user(body, redis_db)
-        #
-        # if not user.status_active:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_403_FORBIDDEN,
-        #         detail=messages.USER_IS_BANNED,
-        #     )
 
         user = await db_user_repo.get_user_by_email(email, db)
         if user is None:

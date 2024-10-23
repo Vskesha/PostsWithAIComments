@@ -34,23 +34,4 @@ class DBUserRepository(UserRepository):
         return user
 
 
-class RedisUserRepository(UserRepository):
-
-    async def get_user_by_email(self, email: str, db: Redis) -> User:
-        user = await db.get(f"users:{email}")
-        if user:
-            pickle.loads(user)
-        return user
-
-    async def create_user(self, body: dict, db: Redis) -> User:
-        key = "users:" + body.get("email")
-        user = body.get("user")
-        await db.set(key, pickle.dumps(user))
-        await  db.expire(key, 900)
-        return user
-
-    async def update_refresh_token(self, email: str, refresh_token: str | None, db: Any) -> User:
-        pass
-
 db_user_repo = DBUserRepository()
-redis_user_repo = RedisUserRepository()
