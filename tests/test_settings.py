@@ -10,7 +10,7 @@ from src.conf.config import load_settings_from_file, get_mandatory_environment_v
 
 def test_load_settings_from_file_successfully(tmp_settings_file: str):
     settings = load_settings_from_file(tmp_settings_file)
-    assert settings.dummy_value == 1
+    assert settings.secret_key == "secret key"
 
 
 def test_load_settings_from_nonexistent_file_raises_exception():
@@ -40,7 +40,7 @@ def test_get_valid_mandatory_environment_variable_successfully():
 
 def test_load_settings_from_environment_variable_successfully(tmp_settings_dir, dummy_env):
     settings = load_settings_from_environment("DUMMY_ENV_FOR_TEST", tmp_settings_dir)
-    assert settings.dummy_value == 99
+    assert settings.secret_key == "another secret key"
 
 
 def test_load_settings_from_nonexistent_environment_variable_raises_exception():

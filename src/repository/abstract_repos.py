@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Any
 
 from src.database.models import Post, User
-from src.schemas.posts import PostBase
+from src.schemas.posts import PostBase, PostRequest
 from src.schemas.users import UserRequest
 
 
@@ -17,7 +17,7 @@ class PostRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def create_post(self, body: PostBase, db: Any) -> Post:
+    async def create_post(self, body: PostRequest, db: Any) -> Post:
         raise NotImplementedError
 
     @abstractmethod
@@ -32,7 +32,7 @@ class PostRepository(ABC):
 class UserRepository(ABC):
 
     @abstractmethod
-    async def get_user_by_email(self, email: str, db: Any) -> User:
+    async def confirm_email(self, email: str, db: Any) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -40,7 +40,11 @@ class UserRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def get_user_by_email(self, email: str, db: Any) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
     async def update_refresh_token(
-        self, email: str, refresh_token: str, db: Any
+        self, email: str, refresh_token: str | None, db: Any
     ) -> User:
         raise NotImplementedError
