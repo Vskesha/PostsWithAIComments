@@ -11,12 +11,12 @@ class Settings(BaseSettings):
     sqlalchemy_database_url: str = "postgresql+asyncpg://postgres:password@localhost:5432/todo_db"
     secret_key: str = "secret key"
     algorithm: str = "HS256"
-    mail_username: str = "example@meta.ua"
+    mail_username: str = "example@ex.ua"
     mail_password: str = "1111"
-    mail_from: str = "example@meta.ua"
-    mail_port: int = 465
-    mail_server: str = "smtp.meta.ua"
-    mail_from_name: str = "ImageIQ"
+    mail_from: str = "example@ex.ua"
+    mail_from_name: str = "PostsAIcomments"
+    mail_port: int = 587
+    mail_server: str = "smtp.gmail.com"
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_password: str | None = None

@@ -32,11 +32,15 @@ class PostRepository(ABC):
 class UserRepository(ABC):
 
     @abstractmethod
-    async def get_user_by_email(self, email: str, db: Any) -> User:
+    async def confirm_email(self, email: str, db: Any) -> None:
         raise NotImplementedError
 
     @abstractmethod
     async def create_user(self, body: UserRequest, db: Any) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_user_by_email(self, email: str, db: Any) -> User:
         raise NotImplementedError
 
     @abstractmethod

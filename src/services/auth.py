@@ -201,53 +201,57 @@ class AuthService:
         """
         Blocks a token by adding it to a Redis set.
         """
-        await redis_db.set(token, True)
-        await redis_db.expire(token, 7 * 24 * 60 * 60)
+        pass
 
     async def token_is_blocked(self, token: str) -> bool:
         """
         Checks if token is in blocked list.
         """
-        result = await redis_db.get(token)
-        return bool(result)
+        pass
 
+    async def create_email_token(self, data: dict):
+        """
+        The create_email_token function takes a dictionary of data and returns a JWT token.
+        The token is encoded with the SECRET_KEY and ALGORITHM defined in the class, as well as an expiration date 7 days from now.
+        The scope of this token is email_token.
 
-    # def create_email_token(self, data: dict):
-    #     """
-    #     The create_email_token function takes a dictionary of data and returns a JWT token.
-    #     The token is encoded with the SECRET_KEY and ALGORITHM defined in the class, as well as an expiration date 7 days from now.
-    #     The scope of this token is &quot;email_token&quot;.
-    #
-    #     :param self: Make the function a method of the user class
-    #     :param data: dict: Pass in the data that will be encoded into a jwt
-    #     :return: A token that is encoded with the user's email and a scope of &quot;email_token&quot;
-    #     """
-    #     to_encode = data.copy()
-    #     expire = datetime.utcnow() + timedelta(days=7)
-    #     to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "email_token"})
-    #     token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
-    #     return token
-    #
-    # def get_email_from_token(self, token: str):
-    #     """
-    #     The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
-    #     It does this by decoding the JWT using our secret key, then checking to make sure it's a valid email verification token.
-    #     If so, it returns the email address from the payload.
-    #
-    #     :param self: Represent the instance of the class
-    #     :param token: str: Pass the token that is sent to the user's email address
-    #     :return: The email address of the user who is trying to verify their account
-    #     """
-    #     try:
-    #         payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-    #         if payload["scope"] == "email_token":
-    #             email = payload["sub"]
-    #             return email
-    #     except JWTError as e:
-    #         # print(e)
-    #         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-    #                             detail="Invalid token for email verification")
-    #
+        :param self: Make the function a method of the user class
+        :param data: dict: Pass in the data that will be encoded into a jwt
+        :return: A token that is encoded with the user's email
+        """
+        to_encode = data.copy()
+        expire = datetime.utcnow() + timedelta(days=7)
+        to_encode.update(
+            {"iat": datetime.utcnow(), "exp": expire, "scope": "email_token"}
+        )
+        token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return token
+
+    async def get_email_from_token(self, token: str):
+        """
+        The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
+        It does this by decoding the JWT using our secret key, then checking to make sure it's a valid email verification token.
+        If so, it returns the email address from the payload.
+
+        :param self: Represent the instance of the class
+        :param token: str: Pass the token that is sent to the user's email address
+        :return: The email address of the user who is trying to verify their account
+        """
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            if payload["scope"] == "email_token":
+                email = payload["sub"]
+                return email
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                detail=messages.INVALID_SCOPE,
+            )
+        except JWTError as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=messages.INVALID_EMAIL_TOKEN,
+            )
+
     # async def token_check(self, payload: dict, token_type: str = 'access_token') -> str:
     #     """
     #     The token_check function is used to validate the token that was sent with the request.

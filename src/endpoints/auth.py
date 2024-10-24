@@ -1,4 +1,13 @@
-from fastapi import APIRouter, status, Depends, HTTPException, Security
+from fastapi import (
+    APIRouter,
+    status,
+    Depends,
+    HTTPException,
+    Security,
+    BackgroundTasks,
+    Request,
+    Response,
+)
 from fastapi.security import (
     OAuth2PasswordRequestForm,
     HTTPAuthorizationCredentials,
@@ -11,9 +20,11 @@ from src.database.db import get_db
 from src.database.models import User
 from src.repository.abstract_repos import UserRepository
 from src.repository.users import db_user_repo
+from src.schemas.email import EmailSchema
 from src.schemas.tokens import TokenSchema
 from src.schemas.users import UserResponse, UserRequest
 from src.services.auth import password_manager, auth_service
+from src.services.email import email_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 user_repo: UserRepository = db_user_repo
@@ -25,6 +36,8 @@ security = HTTPBearer()
 )
 async def signup(
     body: UserRequest,
+    background_tasks: BackgroundTasks,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
@@ -36,6 +49,8 @@ async def signup(
         a new user using the user_repo, and sends an email to the user's email address.
 
     :param body: UserRequest: data for sihning up
+    :param background_tasks: BackgroundTasks: add a task to the background queue
+    :param request: Request: request object
     :param db: AsyncSession: connetion to the database
     :return: UserResponse: newly created user
     """
@@ -46,7 +61,11 @@ async def signup(
         )
     body.password = password_manager.get_password_hash(body.password)
     new_user = await user_repo.create_user(body, db)
-    # background_tasks.add_task(send_email, new_user.email, new_user.username, str(request.base_url))
+    background_tasks.add_task(
+        email_service.send_verification_email,
+        new_user,
+        request.base_url,
+    )
     return new_user
 
 
@@ -68,8 +87,11 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.INVALID_EMAIL
         )
-    # if not user.email_confirmed:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.EMAIL_NOT_CONFIRMED)
+    if not user.email_confirmed:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=messages.EMAIL_NOT_CONFIRMED,
+        )
     if not password_manager.verify_password(body.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.INVALID_PASSWORD
@@ -110,3 +132,41 @@ async def refresh_token(
         "refresh_token": refresh_token,
         "token_type": "bearer",
     }
+
+
+@router.get("/confirmed_email/{token}")
+async def confirmed_email(
+    token: str,
+    db: AsyncSession = Depends(get_db),
+):
+    email = await auth_service.get_email_from_token(token)
+    user = await user_repo.get_user_by_email(email, db)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=messages.VERIFICATION_ERROR,
+        )
+    await user_repo.confirm_email(email, db)
+    return {"message": messages.EMAIL_CONFIRMED}
+
+
+@router.post("/resend_confirmation")
+async def resend_confirmation_email(
+    body: EmailSchema,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await user_repo.get_user_by_email(body.email, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND
+        )
+    if user.email_confirmed:
+        return {"message": messages.EMAIL_CONFIRMED}
+    background_tasks.add_task(
+        email_service.send_verification_email,
+        user,
+        request.base_url,
+    )
+    return {"message": "Check your email for confirmation."}
