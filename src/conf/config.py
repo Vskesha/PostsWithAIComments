@@ -28,7 +28,7 @@ class Settings(BaseSettings):
             raise ValueError("algorithm must be HS256 or HS512")
         return v
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(extra="ignore", env_file=".env", env_file_encoding="utf-8")
 
 
 def load_settings_from_file(settings_file: str) -> Settings:
@@ -55,4 +55,4 @@ def load_settings_from_environment(environment_name: str, settings_dir: str = No
     return load_settings_from_file(config_file)
 
 
-settings = load_settings_from_file(settings_file=".env")
+settings = Settings()
