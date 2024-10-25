@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Any
 
 from src.database.models import Post, User, Token, Comment, Answer
@@ -12,11 +13,16 @@ from src.schemas.users import UserRequest, ChangeRoleModel
 class PostRepository(ABC):
 
     @abstractmethod
-    async def get_posts(self, limit: int, offset: int, db: Any) -> List[Post]:
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_blocked_posts(self, limit: int, offset: int, db: Any) -> List[Post]:
+    async def get_posts(
+        self,
+        db: Any,
+        blocked: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: int | None = None,
+        date_from: str = None,
+        date_to: str = None,
+    ) -> List[Post]:
         raise NotImplementedError
 
     @abstractmethod
@@ -45,12 +51,14 @@ class CommentRepository(ABC):
     @abstractmethod
     async def get_comments(
         self,
-        user_id: int | None,
-        post_id: int | None,
-        blocked: bool,
-        limit: int,
-        offset: int,
         db: Any,
+        blocked: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: int | None = None,
+        post_id: int | None = None,
+        date_from: str = None,
+        date_to: str = None,
     ) -> List[Comment]:
         raise NotImplementedError
 
@@ -82,12 +90,14 @@ class AnswerRepository(ABC):
     @abstractmethod
     async def get_answers(
         self,
-        user_id: int | None,
-        comment_id: int | None,
-        blocked: bool,
-        limit: int,
-        offset: int,
         db: Any,
+        blocked: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: int | None = None,
+        comment_id: int | None = None,
+        date_from: str = None,
+        date_to: str = None,
     ) -> List[Answer]:
         raise NotImplementedError
 

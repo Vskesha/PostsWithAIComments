@@ -1,5 +1,7 @@
-from typing import List, Any
+from datetime import timedelta
+from typing import List
 
+from dateutil.parser import parse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,17 +12,31 @@ from src.schemas.posts import PostRequest, PostBase, BlockSchema
 
 class DBPostRepository(PostRepository):
 
-    async def get_posts(self, limit: int, offset: int, db: AsyncSession) -> List[Post]:
-        stmt = select(Post).where(Post.blocked == False).offset(offset).limit(limit)
+    async def get_posts(
+        self,
+        db: AsyncSession,
+        blocked: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: int | None = None,
+        date_from: str = None,
+        date_to: str = None,
+    ) -> List[Post]:
+        stmt = select(Post).where(Post.blocked == blocked)
+        if user_id:
+            stmt = stmt.filter_by(user_id=user_id)
+        if date_from:
+            date_from = parse(date_from)
+            stmt = stmt.filter(Post.created_at >= date_from)
+        if date_to:
+            date_to = parse(date_to)
+            date_to += timedelta(days=1)
+            stmt = stmt.filter(Post.created_at <= date_to)
+        stmt = stmt.offset(offset).limit(limit)
         result = await db.execute(stmt)
         posts = result.scalars().all()
         return list(posts)
 
-    async def get_blocked_posts(self, limit: int, offset: int, db: AsyncSession) -> List[Post]:
-        stmt = select(Post).where(Post.blocked == True).offset(offset).limit(limit)
-        result = await db.execute(stmt)
-        posts = result.scalars().all()
-        return list(posts)
 
     async def get_post(self, post_id, db: AsyncSession) -> Post:
         stmt = select(Post).filter_by(id=post_id)
@@ -34,9 +50,7 @@ class DBPostRepository(PostRepository):
         await db.refresh(post)
         return post
 
-    async def update_post(
-        self, body: PostBase, post_id: int, db: AsyncSession
-    ) -> Post:
+    async def update_post(self, body: PostBase, post_id: int, db: AsyncSession) -> Post:
         stmt = select(Post).filter_by(id=post_id)
         result = await db.execute(stmt)
         post = result.scalar_one_or_none()

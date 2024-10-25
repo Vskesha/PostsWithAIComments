@@ -18,11 +18,17 @@ router = APIRouter(prefix="/posts", tags=["posts"])
 
 @router.get("/", response_model=List[PostResponse])
 async def get_posts(
-    limit: int = Query(10, ge=10, le=500),
+    limit: int = Query(20, ge=10, le=500),
     offset: int = Query(0, ge=0),
+    user_id: int = Query(default=None, ge=1),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> List[Post]:
-    posts = await post_repo.get_posts(limit, offset, db)
+    print(f"{date_from=}, {date_to=}")
+    posts = await post_repo.get_posts(
+        db, False, limit, offset, user_id, date_from, date_to
+    )
     return posts
 
 
@@ -32,11 +38,16 @@ async def get_posts(
     dependencies=[Depends(admin_moderator_access)],
 )
 async def get_blocked_posts(
-    limit: int = Query(10, ge=10, le=500),
+    limit: int = Query(20, ge=10, le=500),
     offset: int = Query(0, ge=0),
+    user_id: int | None = Query(default=None, ge=1),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> List[Post]:
-    posts = await post_repo.get_blocked_posts(limit, offset, db)
+    posts = await post_repo.get_posts(
+        db, True, limit, offset, user_id, date_from, date_to
+    )
     return posts
 
 
