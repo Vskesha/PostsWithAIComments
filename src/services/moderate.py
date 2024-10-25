@@ -12,8 +12,11 @@ class ModerateService(ABC):
 
 class AIModerateService(ModerateService):
     async def includes_profanity(self, text: str) -> bool:
-        prompt = (f"Does the following content contain inappropriate or obscene language? '{text}'"
-                  f"Simply answer 'yes' or 'no'")
+        prompt = (
+            f"Does the following content contain inappropriate or obscene language?\n"
+            f"{text}\n"
+            f"Simply answer 'yes' or 'no'"
+        )
         response = await ai_service.get_response(prompt=prompt)
         return "yes" in response.lower()
 

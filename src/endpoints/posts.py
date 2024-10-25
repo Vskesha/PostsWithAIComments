@@ -67,7 +67,7 @@ async def create_post(
             detail="Error creating post",
         )
     inapropriate = await moderate_service.includes_profanity(
-        body.title + " " + body.content
+        body.title + "\n" + body.content
     )
     if inapropriate:
         await post_repo.block_post(BlockSchema(id=post.id, blocked=True), db)
@@ -97,7 +97,7 @@ async def update_post(
     post = await post_repo.update_post(body, post_id, db)
 
     inapropriate = await moderate_service.includes_profanity(
-        body.title + " " + body.content
+        body.title + "\n" + body.content
     )
     if inapropriate:
         await post_repo.block_post(BlockSchema(id=post.id, blocked=True), db)

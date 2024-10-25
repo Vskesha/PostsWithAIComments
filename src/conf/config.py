@@ -20,6 +20,18 @@ class Settings(BaseSettings):
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_password: str | None = None
+    google_sa_type: str = "google_sa_type"
+    google_sa_project_id: str = "google_sa_project_id"
+    google_sa_private_key_id: str = "google_sa_private_key_id"
+    google_sa_private_key: str = "-----BEGIN PRIVATE KEY-----"
+    google_sa_client_email: str = "google_sa_client_email"
+    google_sa_client_id: str = "google_sa_client_id"
+    google_sa_auth_uri: str = "https://"
+    google_sa_token_uri: str = "https://"
+    google_sa_auth_provider_x509_cert_url: str = "https://www.googleapis.com"
+    google_sa_client_x509_cert_url: str = "https://www.googleapis.com"
+    google_sa_universe_domain: str = "google_sa_universe_domain"
+    google_sa_location: str = "GOOGLE_SA_LOCATION"
 
     @field_validator("algorithm")
     @classmethod
