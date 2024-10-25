@@ -1,11 +1,11 @@
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import User
+from src.database.models import User, Post
 from src.repository.abstract_repos import UserRepository
-from src.schemas.users import UserRequest
+from src.schemas.users import UserRequest, ChangeRoleModel
 
 
 class DBUserRepository(UserRepository):
@@ -65,10 +65,50 @@ class DBUserRepository(UserRepository):
         user = result.scalar_one_or_none()
         return user
 
-    async def update_password(self, user_id: int, password: str, db: Any) -> User:
+    async def update_password(
+        self, user_id: int, password: str, db: AsyncSession
+    ) -> User:
         user = await self.get_user_by_id(user_id, db)
         if user:
             user.password = password
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def get_users(self, limit: int, offset: int, db: AsyncSession) -> List[User]:
+        stmt = select(User).offset(offset).limit(limit)
+        result = await db.execute(stmt)
+        users = result.scalars().all()
+        return list(users)
+
+    async def ban_user(self, user_id: int, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(user_id, db)
+        if user:
+            user.banned = True
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def unban_user(self, user_id: int, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(user_id, db)
+        if user:
+            user.banned = False
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def change_role(self, body: ChangeRoleModel, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(body.user_id, db)
+        if user:
+            user.role = body.user_role
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def set_answer_delay(self, user_id: int, delay: int | None, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(user_id, db)
+        if user:
+            user.answer_delay = delay
             await db.commit()
             await db.refresh(user)
         return user

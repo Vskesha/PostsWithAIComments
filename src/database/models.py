@@ -28,6 +28,7 @@ class User(Base):
     )
     role: Mapped[Role] = mapped_column(Enum(Role), default=Role.user, nullable=False)
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
+    answer_delay: Mapped[int] = mapped_column(Integer, default=None, nullable=True)
 
 
 class Post(Base):

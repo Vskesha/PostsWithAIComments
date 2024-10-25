@@ -4,7 +4,7 @@ from typing import List, Any
 from src.database.models import Post, User, Token
 from src.schemas.posts import PostBase, PostRequest
 from src.schemas.tokens import TokenData
-from src.schemas.users import UserRequest
+from src.schemas.users import UserRequest, ChangeRoleModel
 
 
 class PostRepository(ABC):
@@ -75,5 +75,25 @@ class UserRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def get_users(self, limit: int, offset: int, db: Any) -> List[User]:
+        raise NotImplementedError
+
+    @abstractmethod
     async def update_password(self, user_id: int, password: str, db: Any) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def ban_user(self, user_id: int, db: Any) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def unban_user(self, user_id: int, db: Any) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def change_role(self, body: ChangeRoleModel, db: Any) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def set_answer_delay(self, user_id: int, delay: int | None, db: Any) -> User:
         raise NotImplementedError

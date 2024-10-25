@@ -128,7 +128,7 @@ async def login(
         )
     if user.banned:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=messages.USER_IS_BANNED
+            status_code=status.HTTP_403_FORBIDDEN, detail=messages.USER_WAS_BANNED
         )
 
     # delete old expired tokens if one of ten cases
