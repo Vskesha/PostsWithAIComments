@@ -33,14 +33,16 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 
 @router.get("/", response_model=List[CommentResponse])
 async def get_comments(
+    limit: int = Query(20, ge=10, le=500),
+    offset: int = Query(0, ge=0),
     user_id: int = Query(None, ge=1),
     post_id: int = Query(None, ge=1),
-    limit: int = Query(10, ge=10, le=500),
-    offset: int = Query(0, ge=0),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> List[Comment]:
     comments = await comment_repo.get_comments(
-        user_id, post_id, False, limit, offset, db
+        db, False, limit, offset, user_id, post_id, date_from, date_to
     )
     return comments
 
@@ -51,14 +53,16 @@ async def get_comments(
     dependencies=[Depends(admin_moderator_access)],
 )
 async def get_blocked_comments(
+    limit: int = Query(20, ge=10, le=500),
+    offset: int = Query(0, ge=0),
     user_id: int = Query(None, ge=1),
     post_id: int = Query(None, ge=1),
-    limit: int = Query(10, ge=10, le=500),
-    offset: int = Query(0, ge=0),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> List[Comment]:
     comments = await comment_repo.get_comments(
-        user_id, post_id, True, limit, offset, db
+        db, True, limit, offset, user_id, post_id, date_from, date_to
     )
     return comments
 

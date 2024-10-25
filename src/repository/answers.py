@@ -1,5 +1,7 @@
+from datetime import timedelta
 from typing import List
 
+from dateutil.parser import parse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,18 +15,27 @@ class DBAnswerRepository(AnswerRepository):
 
     async def get_answers(
         self,
-        user_id: int | None,
-        comment_id: int | None,
-        blocked: bool,
-        limit: int,
-        offset: int,
         db: AsyncSession,
+        blocked: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: int | None = None,
+        comment_id: int | None = None,
+        date_from: str = None,
+        date_to: str = None,
     ) -> List[Answer]:
         stmt = select(Answer).where(Answer.blocked == blocked)
         if user_id:
             stmt = stmt.filter_by(user_id=user_id)
         if comment_id:
             stmt = stmt.filter_by(comment_id=comment_id)
+        if date_from:
+            date_from = parse(date_from)
+            stmt = stmt.filter(Answer.created_at >= date_from)
+        if date_to:
+            date_to = parse(date_to)
+            date_to += timedelta(days=1)
+            stmt = stmt.filter(Answer.created_at <= date_to)
         stmt = stmt.offset(offset).limit(limit)
         result = await db.execute(stmt)
         answers = result.scalars().all()

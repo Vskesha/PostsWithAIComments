@@ -1,5 +1,7 @@
+from datetime import timedelta
 from typing import List
 
+from dateutil.parser import parse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,18 +15,27 @@ class DBCommentRepository(CommentRepository):
 
     async def get_comments(
         self,
-        user_id: int | None,
-        post_id: int | None,
-        blocked: bool,
-        limit: int,
-        offset: int,
         db: AsyncSession,
+        blocked: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: int | None = None,
+        post_id: int | None = None,
+        date_from: str = None,
+        date_to: str = None,
     ) -> List[Comment]:
         stmt = select(Comment).where(Comment.blocked == blocked)
         if user_id:
             stmt = stmt.filter_by(user_id=user_id)
         if post_id:
             stmt = stmt.filter_by(post_id=post_id)
+        if date_from:
+            date_from = parse(date_from)
+            stmt = stmt.filter(Comment.created_at >= date_from)
+        if date_to:
+            date_to = parse(date_to)
+            date_to += timedelta(days=1)
+            stmt = stmt.filter(Comment.created_at <= date_to)
         stmt = stmt.offset(offset).limit(limit)
         result = await db.execute(stmt)
         comments = result.scalars().all()

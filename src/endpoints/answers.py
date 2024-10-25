@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
 from src.database.db import get_db
-from src.database.models import User, Role, Comment, Answer
+from src.database.models import User, Role, Answer
 from src.repository.answers import answer_repo
 from src.schemas.answers import (
     AnswerResponse,
@@ -32,14 +32,16 @@ router = APIRouter(prefix="/answers", tags=["answers"])
 
 @router.get("/", response_model=List[AnswerResponse])
 async def get_answers(
-    user_id: int = Query(None, ge=1),
-    comment_id: int = Query(None, ge=1),
     limit: int = Query(10, ge=10, le=500),
     offset: int = Query(0, ge=0),
+    user_id: int = Query(None, ge=1),
+    comment_id: int = Query(None, ge=1),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> List[Answer]:
     answers = await answer_repo.get_answers(
-        user_id, comment_id, False, limit, offset, db
+        db, False, limit, offset, user_id, comment_id, date_from, date_to
     )
     return answers
 
@@ -50,14 +52,16 @@ async def get_answers(
     dependencies=[Depends(admin_moderator_access)],
 )
 async def get_blocked_answers(
-    user_id: int = Query(None, ge=1),
-    comment_id: int = Query(None, ge=1),
     limit: int = Query(10, ge=10, le=500),
     offset: int = Query(0, ge=0),
+    user_id: int = Query(None, ge=1),
+    comment_id: int = Query(None, ge=1),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> List[Answer]:
     answers = await answer_repo.get_answers(
-        user_id, comment_id, True, limit, offset, db
+        db, True, limit, offset, user_id, comment_id, date_from, date_to
     )
     return answers
 
