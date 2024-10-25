@@ -7,13 +7,11 @@ from src.conf import messages
 from src.conf.messages import POST_NOT_FOUND
 from src.database.db import get_db
 from src.database.models import User, Post
-from src.repository.abstract_repos import PostRepository
-from src.repository.posts import db_post_repo
+from src.repository.posts import post_repo
 from src.schemas.posts import PostResponse, PostRequest, PostBase
 from src.services.auth import auth_service
 
 router = APIRouter(prefix="/posts", tags=["posts"])
-post_repo: PostRepository = db_post_repo
 
 
 @router.get("/", response_model=List[PostResponse])

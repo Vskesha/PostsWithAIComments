@@ -17,7 +17,12 @@ class UserBaseId(UserBase):
 class UserResponse(UserBaseId):
     email_confirmed: bool
     role: str = Field()
-    status_active: bool
+    banned: bool
 
     class Config:
         from_attributes = True
+
+
+class ChangePasswordSchema(BaseModel):
+    old_password: str = Field(min_length=6, max_length=16)
+    new_password: str = Field(min_length=6, max_length=16)

@@ -7,7 +7,7 @@ from pydantic import EmailStr
 
 from src.conf.config import settings
 from src.database.models import User
-from src.services.auth import auth_service
+from src.services.auth import auth_service, token_manager
 
 
 class EmailService:
@@ -31,7 +31,7 @@ class EmailService:
         subject: str,
         body: dict,
         template_filename: str,
-    ):
+    ) -> None:
         try:
             message = MessageSchema(
                 subject=subject,
@@ -45,14 +45,33 @@ class EmailService:
         except ConnectionErrors as err:
             print(err)
 
-    async def send_verification_email(self, user: User, host: str):
-        verification_token = await auth_service.create_email_token({"sub": user.email})
+    async def send_verification_email(self, user: User, host: str) -> None:
+        verification_token = await token_manager.create_email_token({"sub": user.email})
         body = {"host": host, "username": user.username, "token": verification_token}
         await self.send_email(
             recipients=[user.email],
             subject="Confirm your email.",
             body=body,
             template_filename="verify_email.html",
+        )
+
+    async def send_reset_password_email(self, user: User, host: str) -> None:
+        reset_token = await token_manager.create_email_token({"sub": user.email})
+        body = {"host": host, "username": user.username, "token": reset_token}
+        await self.send_email(
+            recipients=[user.email],
+            subject="Reset your password.",
+            body=body,
+            template_filename="reset_password.html",
+        )
+
+    async def send_new_password_email(self, user: User, new_password: str) -> None:
+        body = {"username": user.username, "password": new_password}
+        await self.send_email(
+            recipients=[user.email],
+            subject="Your new password.",
+            body=body,
+            template_filename="new_password.html",
         )
 
 
