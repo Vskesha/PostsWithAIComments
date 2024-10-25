@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List, Any
 
-from src.database.models import Post, User, Token
+from src.database.models import Post, User, Token, Comment, Answer
+from src.schemas.answers import AnswerRequest, AnswerBase
+from src.schemas.comments import CommentRequest, CommentBase
 from src.schemas.posts import PostBase, PostRequest, BlockSchema
 from src.schemas.tokens import TokenData
 from src.schemas.users import UserRequest, ChangeRoleModel
@@ -35,6 +37,78 @@ class PostRepository(ABC):
 
     @abstractmethod
     async def block_post(self, body: BlockSchema, db: Any) -> Post:
+        raise NotImplementedError
+
+
+class CommentRepository(ABC):
+
+    @abstractmethod
+    async def get_comments(
+        self,
+        user_id: int | None,
+        post_id: int | None,
+        blocked: bool,
+        limit: int,
+        offset: int,
+        db: Any,
+    ) -> List[Comment]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_comment(self, comment_id, db: Any) -> Comment:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_comment(self, body: CommentRequest, db: Any) -> Comment:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_comment(
+        self, body: CommentBase, comment_id: int, db: Any
+    ) -> Comment:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_comment(self, comment_id: int, db: Any) -> Comment:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def block_comment(self, body: BlockSchema, db: Any) -> Comment:
+        raise NotImplementedError
+
+
+class AnswerRepository(ABC):
+
+    @abstractmethod
+    async def get_answers(
+        self,
+        user_id: int | None,
+        comment_id: int | None,
+        blocked: bool,
+        limit: int,
+        offset: int,
+        db: Any,
+    ) -> List[Answer]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_answer(self, answer_id, db: Any) -> Answer:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_answer(self, body: AnswerRequest, db: Any) -> Answer:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_answer(self, body: AnswerBase, answer_id: int, db: Any) -> Answer:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_answer(self, answer_id: int, db: Any) -> Answer:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def block_answer(self, body: BlockSchema, db: Any) -> Answer:
         raise NotImplementedError
 
 
