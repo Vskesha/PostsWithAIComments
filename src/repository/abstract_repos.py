@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Any
 
 from src.database.models import Post, User, Token
-from src.schemas.posts import PostBase, PostRequest
+from src.schemas.posts import PostBase, PostRequest, BlockSchema
 from src.schemas.tokens import TokenData
 from src.schemas.users import UserRequest, ChangeRoleModel
 
@@ -11,6 +11,10 @@ class PostRepository(ABC):
 
     @abstractmethod
     async def get_posts(self, limit: int, offset: int, db: Any) -> List[Post]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_blocked_posts(self, limit: int, offset: int, db: Any) -> List[Post]:
         raise NotImplementedError
 
     @abstractmethod
@@ -27,6 +31,10 @@ class PostRepository(ABC):
 
     @abstractmethod
     async def delete_post(self, post_id: int, db: Any) -> Post:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def block_post(self, body: BlockSchema, db: Any) -> Post:
         raise NotImplementedError
 
 

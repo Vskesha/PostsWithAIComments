@@ -16,9 +16,15 @@ class PostRequest(PostBase):
 
 class PostResponse(PostBase):
     id: int = Field(ge=1)
+    blocked: bool = False
     created_at: datetime
     updated_at: datetime
     user: UserBaseId
 
     class Config:
         from_attributes = True
+
+
+class BlockSchema(BaseModel):
+    id: int = Field(ge=1)
+    blocked: bool

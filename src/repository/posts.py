@@ -1,17 +1,23 @@
-from typing import List
+from typing import List, Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import Post
 from src.repository.abstract_repos import PostRepository
-from src.schemas.posts import PostRequest, PostBase
+from src.schemas.posts import PostRequest, PostBase, BlockSchema
 
 
 class DBPostRepository(PostRepository):
 
     async def get_posts(self, limit: int, offset: int, db: AsyncSession) -> List[Post]:
-        stmt = select(Post).offset(offset).limit(limit)
+        stmt = select(Post).where(Post.blocked == False).offset(offset).limit(limit)
+        result = await db.execute(stmt)
+        posts = result.scalars().all()
+        return list(posts)
+
+    async def get_blocked_posts(self, limit: int, offset: int, db: AsyncSession) -> List[Post]:
+        stmt = select(Post).where(Post.blocked == True).offset(offset).limit(limit)
         result = await db.execute(stmt)
         posts = result.scalars().all()
         return list(posts)
@@ -48,6 +54,14 @@ class DBPostRepository(PostRepository):
         if post:
             await db.delete(post)
             await db.commit()
+        return post
+
+    async def block_post(self, body: BlockSchema, db: AsyncSession) -> Post:
+        post = await self.get_post(body.id, db)
+        if post:
+            post.blocked = body.blocked
+            await db.commit()
+            await db.refresh(post)
         return post
 
 
