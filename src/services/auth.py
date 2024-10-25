@@ -12,8 +12,53 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.conf import messages
 from src.conf.config import settings
 from src.database.db import get_db
-from src.database.redis import redis_db
-from src.repository.users import db_user_repo
+from src.repository.tokens import token_repo
+from src.repository.users import user_repo
+
+
+class AuthService:
+    SECRET_KEY = settings.secret_key
+    ALGORITHM = settings.algorithm
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+    async def get_current_user(
+        self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+    ):
+        """
+        The get_current_user function is a dependency that will be used in the
+            protected endpoints. It takes a token as an argument and returns the user
+            if it's valid, or raises an HTTPException with status code 401 if not.
+
+        :param self: Make the function a method of the class
+        :param token: str: Get the token from the authorization header
+        :param db: Session: Get the database session
+        :return: The user object of the logged in user
+        """
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=messages.COULD_NOT_VALIDATE_CREDENTIALS,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+        blocked = await token_repo.token_is_blocked(token, db)
+        if blocked:
+            raise credentials_exception
+
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            if payload.get("scope") == "access_token":
+                email = payload.get("sub")
+                if email is None:
+                    raise credentials_exception
+            else:
+                raise credentials_exception
+        except JWTError as err:
+            raise credentials_exception
+
+        user = await user_repo.get_user_by_email(email, db)
+        if user is None:
+            raise credentials_exception
+        return user
 
 
 class PasswordManager:
@@ -74,26 +119,25 @@ class PasswordManager:
         return pwd
 
 
-class AuthService:
+class TokenManager:
+    """
+    The TokenManager class is responsible for managing JWT tokens.
+    """
+
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
     async def create_access_token(
         self, data: dict, expires_delta: Optional[float] = None
-    ):
+    ) -> str:
         """
-        The create_access_token function creates a new access token.
+        creates an access token for the user.
 
-        Args:
-            self: Refer to the current instance of a class
-            data (dict): A dictionary containing the claims to be encoded in the JWT.
-            expires_delta (Optional[float]): An optional parameter specifying how long, in seconds,
-            the access token should last before expiring. If not specified, it defaults to 15 minutes.
-
-        Returns:
-            A jwt token
+        :param data: dict: Pass in the user's email, which is used to create a unique access token for each user
+        :param expires_delta: Optional[float]: Set the expiration time of the access token
+        :return: str: An access token
         """
+
         to_encode = data.copy()
         expires_delta = expires_delta or 60 * 60
         expire = datetime.utcnow() + timedelta(seconds=expires_delta)
@@ -107,17 +151,14 @@ class AuthService:
 
     async def create_refresh_token(
         self, data: dict, expires_delta: Optional[float] = None
-    ):
+    ) -> str:
         """
-        The create_refresh_token function creates a refresh token for the user.
-            Args:
-                data (dict): A dictionary containing the user's id and username.
-                expires_delta (Optional[float]): The number of seconds until the token expires, defaults to None.
+        creates a refresh token for the user.
 
         :param self: Make the function a method of the class
-        :param data: dict: Pass in the user's id, which is used to create a unique refresh token for each user
+        :param data: dict: Pass in the user's email, which is used to create a unique refresh token for each user
         :param expires_delta: Optional[float]: Set the expiration time of the refresh token
-        :return: A refresh token
+        :return: str: A refresh token
         """
         to_encode = data.copy()
         expires_delta = expires_delta or 7 * 24 * 60 * 60
@@ -158,58 +199,7 @@ class AuthService:
                 detail=messages.COULD_NOT_VALIDATE_CREDENTIALS,
             )
 
-    async def get_current_user(
-        self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
-    ):
-        """
-        The get_current_user function is a dependency that will be used in the
-            protected endpoints. It takes a token as an argument and returns the user
-            if it's valid, or raises an HTTPException with status code 401 if not.
-
-        :param self: Make the function a method of the class
-        :param token: str: Get the token from the authorization header
-        :param db: Session: Get the database session
-        :return: The user object of the logged in user
-        """
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=messages.COULD_NOT_VALIDATE_CREDENTIALS,
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-        # blocked = await self.token_is_blocked(token)
-        # if blocked:
-        #     raise credentials_exception
-
-        try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            if payload.get("scope") == "access_token":
-                email = payload.get("sub")
-                if email is None:
-                    raise credentials_exception
-            else:
-                raise credentials_exception
-        except JWTError as err:
-            raise credentials_exception
-
-        user = await db_user_repo.get_user_by_email(email, db)
-        if user is None:
-            raise credentials_exception
-        return user
-
-    async def block_token(self, token: str) -> None:
-        """
-        Blocks a token by adding it to a Redis set.
-        """
-        pass
-
-    async def token_is_blocked(self, token: str) -> bool:
-        """
-        Checks if token is in blocked list.
-        """
-        pass
-
-    async def create_email_token(self, data: dict):
+    async def create_email_token(self, data: dict) -> str:
         """
         The create_email_token function takes a dictionary of data and returns a JWT token.
         The token is encoded with the SECRET_KEY and ALGORITHM defined in the class, as well as an expiration date 7 days from now.
@@ -227,7 +217,7 @@ class AuthService:
         token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return token
 
-    async def get_email_from_token(self, token: str):
+    async def get_email_from_token(self, token: str) -> str:
         """
         The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
         It does this by decoding the JWT using our secret key, then checking to make sure it's a valid email verification token.
@@ -252,64 +242,17 @@ class AuthService:
                 detail=messages.INVALID_EMAIL_TOKEN,
             )
 
-    # async def token_check(self, payload: dict, token_type: str = 'access_token') -> str:
-    #     """
-    #     The token_check function is used to validate the token that was sent with the request.
-    #         It will check if it's an access_token or a refresh_token, and then return the email address of
-    #         who owns that token. If it fails to find an email address, or if there is no scope in the payload,
-    #         then we raise a 401 Unauthorized error.
-    #
-    #     :param self: Represent the instance of the class
-    #     :param payload: dict: Pass in the token payload
-    #     :param token_type: str: Check if the token is an access_token or a refresh_token
-    #     :return: The email address of the user
-    #     :doc-author: Trelent
-    #     """
-    #     if payload['scope'] == token_type:
-    #         email = payload['sub']
-    #         if email is None:
-    #             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
-    #     else:
-    #         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
-    #
-    #     return email
-    #
-    # async def logout_user(self,
-    #         token: str = Depends(oauth2_scheme),
-    #         db: Session = Depends(get_db)
-    # ) -> None:
-    #     try:
-    #         payload = jwt.decode(token, self.SECRET_KEY, self.ALGORITHM)
-    #         email = await self.token_check(payload, token_type='access_token')
-    #         print("Before invalidation:", self.invalid_tokens)
-    #         await self.invalidate_token(token)
-    #         print("After invalidation:", self.invalid_tokens)
-    #     except:
-    #         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
-    #
-    #     now = datetime.timestamp(datetime.now())
-    #     time_delta = payload['exp'] - now + 300
-    #     self.r.set(token, 'True')
-    #     self.r.expire(token, int(time_delta))
-    #
-    #     user = await repository_users.get_user_by_email(email, db)
-    #     user.refresh_token = None
-    #     db.commit()
-    #     db.refresh(user)
-    #
-    # async def clear_user_cash(self, user_email) -> None:
-    #     """
-    #     The clear_user_cash function deletes the user's cash from the Redis database.
-    #         Args:
-    #             user_email (str): The email of the user whose cash is to be deleted.
-    #
-    #     :param self: Represent the instance of the class
-    #     :param user_email: Identify the user in the database
-    #     :return: None
-    #     :doc-author: Trelent
-    #     """
-    #     self.r.delete(f"user:{user_email}")
+    async def get_expire_date(self, token: str) -> datetime:
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            return datetime.fromtimestamp(payload["exp"])
+        except JWTError as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=messages.INVALID_EMAIL_TOKEN,
+            )
 
 
 password_manager = PasswordManager()
+token_manager = TokenManager()
 auth_service = AuthService()

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
 from src.database.db import get_db
-from src.endpoints import auth, posts
+from src.endpoints import auth, posts, users
 
 app = FastAPI()
 
@@ -24,6 +24,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")), name="static")
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
 app.include_router(posts.router, prefix="/api")
 
 

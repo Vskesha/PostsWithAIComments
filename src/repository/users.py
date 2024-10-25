@@ -1,11 +1,11 @@
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import User
+from src.database.models import User, Post
 from src.repository.abstract_repos import UserRepository
-from src.schemas.users import UserRequest
+from src.schemas.users import UserRequest, ChangeRoleModel
 
 
 class DBUserRepository(UserRepository):
@@ -52,24 +52,66 @@ class DBUserRepository(UserRepository):
         user = result.scalar_one_or_none()
         return user
 
-    async def update_refresh_token(
-        self, email: str, refresh_token: str | None, db: Any
-    ) -> User:
+    async def get_user_by_id(self, user_id: int, db: AsyncSession) -> User:
         """
-        Updates the refresh token for a user in the database.
+        Retrieves a user from the database by their ID.
 
-        :param email: str: user's email address
-        :param refresh_token: str | None: new refresh token (or None to remove the refresh token)
+        :param user_id: int: user's ID
         :param db: AsyncSession: connection to the database
-        :return: User: the updated user
+        :return: User: the user with the given ID, or None if not found
         """
+        stmt = select(User).filter_by(id=user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+        return user
 
-        user = await self.get_user_by_email(email, db)
+    async def update_password(
+        self, user_id: int, password: str, db: AsyncSession
+    ) -> User:
+        user = await self.get_user_by_id(user_id, db)
         if user:
-            user.refresh_token = refresh_token
+            user.password = password
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def get_users(self, limit: int, offset: int, db: AsyncSession) -> List[User]:
+        stmt = select(User).offset(offset).limit(limit)
+        result = await db.execute(stmt)
+        users = result.scalars().all()
+        return list(users)
+
+    async def ban_user(self, user_id: int, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(user_id, db)
+        if user:
+            user.banned = True
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def unban_user(self, user_id: int, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(user_id, db)
+        if user:
+            user.banned = False
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def change_role(self, body: ChangeRoleModel, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(body.user_id, db)
+        if user:
+            user.role = body.user_role
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    async def set_answer_delay(self, user_id: int, delay: int | None, db: AsyncSession) -> User:
+        user = await self.get_user_by_id(user_id, db)
+        if user:
+            user.answer_delay = delay
             await db.commit()
             await db.refresh(user)
         return user
 
 
-db_user_repo = DBUserRepository()
+user_repo: UserRepository = DBUserRepository()

@@ -51,4 +51,4 @@ class DBPostRepository(PostRepository):
         return post
 
 
-db_post_repo = DBPostRepository()
+post_repo: PostRepository = DBPostRepository()
