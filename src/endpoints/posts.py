@@ -4,7 +4,6 @@ from fastapi import APIRouter, HTTPException, Depends, status, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
-from src.conf.messages import POST_NOT_FOUND
 from src.database.db import get_db
 from src.database.models import User, Post, Role
 from src.repository.posts import post_repo
@@ -49,7 +48,7 @@ async def get_post(
     post = await post_repo.get_post(post_id, db)
     if post is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=POST_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND, detail=messages.POST_NOT_FOUND
         )
     return post
 
@@ -68,10 +67,10 @@ async def create_post(
             detail="Error creating post",
         )
     inapropriate = await moderate_service.includes_profanity(
-        body.title + " " + body.body
+        body.title + " " + body.content
     )
     if inapropriate:
-        await post_repo.block_post(post.id, db)
+        await post_repo.block_post(BlockSchema(id=post.id, blocked=True), db)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=messages.INAPPROPRIATE
         )
@@ -88,7 +87,7 @@ async def update_post(
     post = await post_repo.get_post(post_id, db)
     if post is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=POST_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND, detail=messages.POST_NOT_FOUND
         )
 
     if current_user.role == Role.user and post.user_id != current_user.id:
@@ -98,10 +97,10 @@ async def update_post(
     post = await post_repo.update_post(body, post_id, db)
 
     inapropriate = await moderate_service.includes_profanity(
-        body.title + " " + body.body
+        body.title + " " + body.content
     )
     if inapropriate:
-        await post_repo.block_post(post.id, db)
+        await post_repo.block_post(BlockSchema(id=post.id, blocked=True), db)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=messages.INAPPROPRIATE
         )
@@ -118,7 +117,7 @@ async def delete_post(
     post = await post_repo.get_post(post_id, db)
     if post is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=POST_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND, detail=messages.POST_NOT_FOUND
         )
     if current_user.role == Role.user and post.user_id != current_user.id:
         raise HTTPException(
@@ -138,16 +137,16 @@ async def block_post(
     db: AsyncSession = Depends(get_db),
 ) -> MessageSchema:
     """
-    Blocks a post. For admins or moderators only.
+    Blocks a post. For admins and moderators only.
 
-    :param post_id: int: ID of the post to block
+    :param body: BlockSchema: id and boolean for block
     :param db: AsyncSession: Database session
     :return: MessageSchema: A response indicating the successful block
     """
     post = await post_repo.get_post(body.id, db)
     if post is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=POST_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND, detail=messages.POST_NOT_FOUND
         )
     await post_repo.block_post(body, db)
     return MessageSchema(message=messages.BLOCKED)

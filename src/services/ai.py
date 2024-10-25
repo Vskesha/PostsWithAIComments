@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 
 
-class AIResponse(ABC):
+class AIService(ABC):
 
     @abstractmethod
     async def get_response(self, prompt: str) -> str:
         raise NotImplementedError
 
 
-class GeminiResponse(AIResponse):
+class GeminiService(AIService):
 
     async def get_response(self, prompt: str) -> str:
         return ""
 
 
-ai_response: AIResponse = GeminiResponse()
+ai_service: AIService = GeminiService()
