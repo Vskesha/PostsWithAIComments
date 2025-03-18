@@ -1,6 +1,6 @@
 name: Check-Import-Sorting
 
-on: [pull_request, push]
+on: [push]
 
 jobs:
   isort:
