@@ -4,6 +4,20 @@ from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException,
                      Request, Security, status)
 from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
                               OAuth2PasswordRequestForm)
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Request,
+    Security,
+    status,
+)
+from fastapi.security import (
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+    OAuth2PasswordRequestForm,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages

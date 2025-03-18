@@ -10,6 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.conf import messages
+from src.database.db import get_db
+from src.endpoints import answers, auth, comments, posts, users
 
 app = FastAPI()
 
