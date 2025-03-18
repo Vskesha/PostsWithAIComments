@@ -1,7 +1,8 @@
 import contextlib
 
 from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncEngine, async_sessionmaker,
+                                    create_async_engine)
 
 from src.conf.config import settings
 
