@@ -4,7 +4,7 @@ from typing import List
 from uuid import UUID
 
 import pytest
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from pydantic.types import PositiveInt
 from starlette.testclient import TestClient
 

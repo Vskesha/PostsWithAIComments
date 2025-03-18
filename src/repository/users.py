@@ -3,9 +3,9 @@ from typing import Any, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import User, Post
+from src.database.models import Post, User
 from src.repository.abstract_repos import UserRepository
-from src.schemas.users import UserRequest, ChangeRoleModel
+from src.schemas.users import ChangeRoleModel, UserRequest
 
 
 class DBUserRepository(UserRepository):

@@ -2,25 +2,20 @@ from typing import List
 
 from fastapi import (
     APIRouter,
-    HTTPException,
+    BackgroundTasks,
     Depends,
-    status,
+    HTTPException,
     Path,
     Query,
-    BackgroundTasks,
+    status,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
 from src.database.db import get_db
-from src.database.models import User, Role, Answer
+from src.database.models import Answer, Role, User
 from src.repository.answers import answer_repo
-from src.schemas.answers import (
-    AnswerResponse,
-    AnswerBase,
-    AnswerRequest,
-    AnswerCreate,
-)
+from src.schemas.answers import AnswerBase, AnswerCreate, AnswerRequest, AnswerResponse
 from src.schemas.email import MessageSchema
 from src.schemas.posts import BlockSchema
 from src.services.auth import auth_service

@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
@@ -8,9 +8,9 @@ from src.database.db import get_db
 from src.database.models import User
 from src.repository.users import user_repo
 from src.schemas.email import MessageSchema
-from src.schemas.users import UserResponse, ChangeRoleModel, AnswerDelayModel
+from src.schemas.users import AnswerDelayModel, ChangeRoleModel, UserResponse
 from src.services.auth import auth_service
-from src.services.roles_access import admin_moderator_access, admin_access
+from src.services.roles_access import admin_access, admin_moderator_access
 
 router = APIRouter(prefix="/users", tags=["users"])
 

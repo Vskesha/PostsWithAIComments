@@ -2,24 +2,24 @@ from typing import List
 
 from fastapi import (
     APIRouter,
-    HTTPException,
+    BackgroundTasks,
     Depends,
-    status,
+    HTTPException,
     Path,
     Query,
-    BackgroundTasks,
+    status,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
 from src.database.db import get_db
-from src.database.models import User, Role, Comment
+from src.database.models import Comment, Role, User
 from src.repository.comments import comment_repo
 from src.schemas.comments import (
-    CommentResponse,
     CommentBase,
-    CommentRequest,
     CommentCreate,
+    CommentRequest,
+    CommentResponse,
 )
 from src.schemas.email import MessageSchema
 from src.schemas.posts import BlockSchema

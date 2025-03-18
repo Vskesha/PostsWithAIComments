@@ -1,14 +1,14 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends, status, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf import messages
 from src.database.db import get_db
-from src.database.models import User, Post, Role
+from src.database.models import Post, Role, User
 from src.repository.posts import post_repo
 from src.schemas.email import MessageSchema
-from src.schemas.posts import PostResponse, PostRequest, PostBase, BlockSchema
+from src.schemas.posts import BlockSchema, PostBase, PostRequest, PostResponse
 from src.services.auth import auth_service
 from src.services.moderate import moderate_service
 from src.services.roles_access import admin_moderator_access
