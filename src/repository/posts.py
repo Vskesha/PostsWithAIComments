@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import Post
 from src.repository.abstract_repos import PostRepository
-from src.schemas.posts import PostRequest, PostBase, BlockSchema
+from src.schemas.posts import BlockSchema, PostBase, PostRequest
 
 
 class DBPostRepository(PostRepository):
