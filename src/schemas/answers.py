@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+
 class AnswerBase(BaseModel):
     content: str = Field(min_length=3)
 

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+
 class CommentBase(BaseModel):
     content: str = Field(min_length=3)
 

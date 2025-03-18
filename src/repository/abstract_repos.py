@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Any
+from typing import Any, List
 
-from src.database.models import Post, User, Token, Comment, Answer
-from src.schemas.answers import AnswerRequest, AnswerBase
-from src.schemas.comments import CommentRequest, CommentBase
-from src.schemas.posts import PostBase, PostRequest, BlockSchema
+from src.database.models import Answer, Comment, Post, Token, User
+from src.schemas.answers import AnswerBase, AnswerRequest
+from src.schemas.comments import CommentBase, CommentRequest
+from src.schemas.posts import BlockSchema, PostBase, PostRequest
 from src.schemas.tokens import TokenData
-from src.schemas.users import UserRequest, ChangeRoleModel
+from src.schemas.users import ChangeRoleModel, UserRequest
 
 
 class PostRepository(ABC):

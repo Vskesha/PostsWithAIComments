@@ -2,17 +2,17 @@ from random import randint
 
 from fastapi import (
     APIRouter,
-    status,
+    BackgroundTasks,
     Depends,
     HTTPException,
-    Security,
-    BackgroundTasks,
     Request,
+    Security,
+    status,
 )
 from fastapi.security import (
-    OAuth2PasswordRequestForm,
     HTTPAuthorizationCredentials,
     HTTPBearer,
+    OAuth2PasswordRequestForm,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,9 +22,9 @@ from src.database.models import User
 from src.repository.tokens import token_repo
 from src.repository.users import user_repo
 from src.schemas.email import EmailSchema, MessageSchema
-from src.schemas.tokens import TokenSchema, TokenData
-from src.schemas.users import UserResponse, UserRequest, ChangePasswordSchema
-from src.services.auth import password_manager, token_manager, auth_service
+from src.schemas.tokens import TokenData, TokenSchema
+from src.schemas.users import ChangePasswordSchema, UserRequest, UserResponse
+from src.services.auth import auth_service, password_manager, token_manager
 from src.services.email import email_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])

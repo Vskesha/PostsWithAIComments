@@ -1,7 +1,7 @@
 from typing import Optional
 
 import pytest
-from pydantic import BaseModel, constr, confloat, ValidationError
+from pydantic import BaseModel, ValidationError, confloat, constr
 
 
 class Book(BaseModel):

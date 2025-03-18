@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from tests.models import Base
 from tests.repositories import SQLBookRepository
-from tests.schemas import BookInDB, Book
+from tests.schemas import Book, BookInDB
 
 
 @pytest.fixture(scope="session")
