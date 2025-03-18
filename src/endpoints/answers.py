@@ -1,7 +1,5 @@
 from typing import List
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Path,
-                     Query, status)
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -17,8 +15,6 @@ from src.conf import messages
 from src.database.db import get_db
 from src.database.models import Answer, Role, User
 from src.repository.answers import answer_repo
-from src.schemas.answers import (AnswerBase, AnswerCreate, AnswerRequest,
-                                 AnswerResponse)
 from src.schemas.answers import AnswerBase, AnswerCreate, AnswerRequest, AnswerResponse
 from src.schemas.email import MessageSchema
 from src.schemas.posts import BlockSchema

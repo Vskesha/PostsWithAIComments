@@ -1,7 +1,5 @@
 from typing import List
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Path,
-                     Query, status)
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -17,8 +15,6 @@ from src.conf import messages
 from src.database.db import get_db
 from src.database.models import Comment, Role, User
 from src.repository.comments import comment_repo
-from src.schemas.comments import (CommentBase, CommentCreate, CommentRequest,
-                                  CommentResponse)
 from src.schemas.comments import (
     CommentBase,
     CommentCreate,
