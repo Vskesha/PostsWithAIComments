@@ -2,12 +2,16 @@ import os
 
 import pytest
 
-from src.conf.config import (get_mandatory_environment_variable,
-                             load_settings_from_environment,
-                             load_settings_from_file)
+from src.conf.config import (
+    get_mandatory_environment_variable,
+    load_settings_from_environment,
+    load_settings_from_file,
+)
 from tests.conftest import tmp_settings_dir, tmp_settings_file
-from tests.exceptions import (ConfigFileNotFoundException,
-                              MandatoryEnvironmentVariableNotDefinedException)
+from tests.exceptions import (
+    ConfigFileNotFoundException,
+    MandatoryEnvironmentVariableNotDefinedException,
+)
 
 
 def test_load_settings_from_file_successfully(tmp_settings_file: str):
