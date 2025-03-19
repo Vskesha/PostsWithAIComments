@@ -50,7 +50,7 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
     """
     The healthchecker function is a simple function that checks the health of the database.
     It does this by making a request to the database and checking if it returns any results.
-    If there are no results, then we know something is wrong with our connection to the database.
+    If there are no results, then we know something is wrong with our connection to the database...
 
     :param db: Session: Pass the database session to the function
     :return: A json object with a message
