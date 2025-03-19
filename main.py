@@ -3,6 +3,9 @@ from os import path
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from src.conf import messages
+from src.database.db import get_db
+from src.endpoints import answers, auth, comments, posts, users
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
